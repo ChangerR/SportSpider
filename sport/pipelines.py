@@ -16,7 +16,7 @@ class SportPipeline(object):
         self.redis_port = redis_port
 
     @classmethod
-    def from_crawler(cls, crawler):
+    def from_crawler(cls, crawler, *args, **kwargs):
         return cls(
             redis_host=crawler.settings.get('REDIS_HOST'),
             redis_port=crawler.settings.get('REDIS_PORT')

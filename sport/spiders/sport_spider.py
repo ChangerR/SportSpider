@@ -13,8 +13,9 @@ import re
 class SportSpider(scrapy.Spider):
     name = 'sport_spider'
 
-    def __init__(self, dates):
-        match = re.match(r'^(\d{4})-(\d{1,2})-(\d{1,2})$', dates)
+    def __init__(self, *args, **kwargs):
+        scrapy.Spider.__init__(self, *args, **kwargs)
+        match = re.match(r'^(\d{4})-(\d{1,2})-(\d{1,2})$', kwargs['dates'])
         if match != None:
             self.year = int(match[1])
             self.mouth = int(match[2])
@@ -23,8 +24,8 @@ class SportSpider(scrapy.Spider):
             raise Exception()
 
     @classmethod
-    def from_crawler(cls, crawler):
-        return cls(crawler.settings.get('DATE'))
+    def from_crawler(cls, crawler, *args, **kwargs):
+        return cls(dates = crawler.settings.get('DATE'))
 
     def crawl_date(self, begin):
         while begin < date.today():
@@ -58,7 +59,7 @@ class SportSpider(scrapy.Spider):
                     bet['bet'] = tds[7].xpath('./div/span/text()').extract()
                     bet['misc'] = tds[8].xpath('./a/@href').extract()
                 #self.log(json.dumps(bet))
-                request = scrapy.Request(url=bet['misc'][1], callback=self.parse_yazhi)
+                request = scrapy.Request(url=bet['misc'][1], callback=self.parse_yazhi, dont_filter=True)
                 request.meta['item'] = bet
                 yield request
 
@@ -76,7 +77,7 @@ class SportSpider(scrapy.Spider):
                 row['org_data'] = tds[4].xpath('./table/tbody/tr/td/text()').extract()
                 row['org_time'] = tds[5].xpath('./time/text()').extract_first()
                 bet['yazhi'].append(row)
-        request = scrapy.Request(url=bet['misc'][2], callback=self.parse_ouzhi)
+        request = scrapy.Request(url=bet['misc'][2], callback=self.parse_ouzhi, dont_filter=True)
         request.meta['item'] = bet
         yield request
 
